@@ -1,0 +1,348 @@
+//
+//  AppDelegate.m
+//  ChongQingPuHui
+//
+//  Created by 节庆霞 on 2017/7/14.
+//  Copyright © 2017年 节庆霞. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import "MainViewController.h"
+#import "LoginController.h"
+#import "AdvanceManagerViewController.h"
+#import "ZAlertViewManager.h"
+#import <UIKit/UIKit.h>
+#import "WXApi.h"
+#pragma mark--zll--AVFoundation---
+#import <AVFoundation/AVFoundation.h>
+#define JPushAPPKEY     @"517d7f08e7adcc5f6a9b6ae4"
+
+@interface AppDelegate ()<JPUSHRegisterDelegate,WXApiDelegate>
+
+
+@end
+
+@implementation AppDelegate
+
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Override point for customization after application launch.
+    
+    NSLog(@"%@",self.window);
+    NSLog(@"TOPALLHeight: %f", TOPALLHeight);   // 高度
+    if ([ZLLModelTool isBlankString:[ZLLModelTool getNormolWithKey:@"first"]]) {
+        [ZLLModelTool setNormol:@"yes" forkey:@"first"];
+        [ZLLModelTool setNormol:@"yes" forkey:@"yuding"];
+        [ZLLModelTool setNormol:@"yes" forkey:@"fukuan"];        
+    }
+    [self loginAgain];
+    [WXApi registerApp:WX_APP_ID];//注册微信支付
+    [[NSUserDefaults standardUserDefaults]setObject:@"2" forKey:KH_The_Version];
+    [[NSUserDefaults standardUserDefaults]synchronize];
+    [AMapServices sharedServices].apiKey = AMAPKEY;
+    
+    //极光推送----------------------------------------------------------------------------
+    JPUSHRegisterEntity * entity = [[JPUSHRegisterEntity alloc] init];
+    entity.types = JPAuthorizationOptionAlert|JPAuthorizationOptionBadge|JPAuthorizationOptionSound;
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+        // 可以添加自定义categories
+        // NSSet<UNNotificationCategory *> *categories for iOS10 or later
+        // NSSet<UIUserNotificationCategory *> *categories for iOS8 and iOS9
+    }
+    [JPUSHService registerForRemoteNotificationConfig:entity delegate:self];
+    
+    
+    // Optional
+    // 获取IDFA
+    // 如需使用IDFA功能请添加此代码并在初始化方法的advertisingIdentifier参数中填写对应值
+    NSString *advertisingId = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+    
+    // Required
+    // init Push
+    // notice: 2.1.5版本的SDK新增的注册方法，改成可上报IDFA，如果没有使用IDFA直接传nil
+    // 如需继续使用pushConfig.plist文件声明appKey等配置内容，请依旧使用[JPUSHService setupWithOption:launchOptions]方式初始化。
+    [JPUSHService setupWithOption:launchOptions appKey:JPushAPPKEY
+                          channel:@""
+                 apsForProduction:0
+            advertisingIdentifier:advertisingId];
+    
+    
+    
+    return YES;
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+    NSLog(@"第二个先执行");
+}
+
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    NSLog(@"第三个先执行");
+}
+
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+    [application setApplicationIconBadgeNumber:0];   //清除角标
+    [JPUSHService setBadge:0];
+    [application cancelAllLocalNotifications];
+    NSLog(@"第四个先执行");
+}
+
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+   [[NSNotificationCenter defaultCenter] postNotificationName:@"MainVersion" object:nil userInfo:nil];
+    NSLog(@"第五个先执行");
+}
+
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    NSLog(@"第六个先执行");
+}
+
+- (void)loginAgain
+{
+    NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+    NSString *phone = [NSString stringWithFormat:@"%@",[user objectForKey:LoginPhone]];
+    NSString *passWord = [NSString stringWithFormat:@"%@",[user objectForKey:LoginPassWord]];
+    if([phone isEqualToString:@"(null)"]){
+        phone = @"";
+    }
+    
+    if([passWord isEqualToString:@"(null)"]){
+        passWord = @"";
+    }
+    
+    if([phone isEqualToString:@""] && [passWord isEqualToString:@""]){
+        
+        [[NSUserDefaults standardUserDefaults]setObject:@"0" forKey:LoginStyle];
+        [self setHomeRoot];
+        
+    }else{
+        
+        NSDictionary *params = @{@"telphone":phone,@"password":passWord};
+        
+        [QJGlobalControl sendPOSTWithUrl:httpLogin parameters:params success:^(id data) {
+            
+            [JHHJView hideLoading];
+            NSLog(@"登录🍉🍉🍉 %@",data);
+            NSString *strrr = data[@"token"];
+            [[NSUserDefaults standardUserDefaults]setObject:strrr forKey:LoginToken];
+            [[NSUserDefaults standardUserDefaults]synchronize];
+            NSString *result=[NSString stringWithFormat:@"%@",data[@"code"]];
+            
+            if ([result isEqual:@"200"]) {
+                
+                NSString *phone = data[@"data"][@"telphone"];
+                NSString *loginID = data[@"data"][@"id"];
+                NSString *token = data[@"data"][@"token"];
+                NSString *userID = data[@"data"][@"userId"];
+                NSString *userName = data[@"data"][@"userName"];
+                NSString *profitRatio = data[@"data"][@"profitRatio"];
+                NSString *iscdKey = [NSString stringWithFormat:@"%@",NULL_TO_NIL(data[@"data"][@"isCdKey"])];
+                
+                [[NSUserDefaults standardUserDefaults]setObject:@"1" forKey:LoginStyle];
+                [[NSUserDefaults standardUserDefaults]setObject:phone forKey:LoginPhone];
+                [[NSUserDefaults standardUserDefaults]setObject:loginID forKey:LoginId];
+                [[NSUserDefaults standardUserDefaults]setObject:token forKey:LoginToken];
+                [[NSUserDefaults standardUserDefaults]setObject:userID forKey:UserID];
+                [[NSUserDefaults standardUserDefaults]setObject:userName forKey:UserName];
+                [[NSUserDefaults standardUserDefaults]setObject:profitRatio forKey:ProfitRatio];
+                [[NSUserDefaults standardUserDefaults]setObject:iscdKey forKey:IsCdKey];
+                [[NSUserDefaults standardUserDefaults]synchronize];
+                
+                NSString *aliasStr = [NSString stringWithFormat:@"%@_1",phone];
+                [JPUSHService setAlias:aliasStr callbackSelector:nil object:nil];
+                //针对某一个特定的用户推送
+                
+                [self setHomeRoot];
+                
+                
+            }else{
+                
+                [[NSUserDefaults standardUserDefaults]setObject:@"0" forKey:LoginStyle];
+                [self setHomeRoot];
+                
+            }
+            
+            
+        } fail:^(NSError *error) {
+            
+            NSLog(@"error = %@",error);
+            
+            [self loginAgain];
+            
+        }];
+        
+
+        
+        
+    }
+    
+}
+
+
+-(void)setHomeRoot{
+    
+    MainViewController *mainVC = [[MainViewController alloc]init];
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:mainVC];
+    self.window.rootViewController = nav;
+    [_window makeKeyAndVisible];
+    
+}
+
+-(void)setLoginRoot{
+    
+    NSInteger loginSty = [[[NSUserDefaults standardUserDefaults] objectForKey:LoginStyle]integerValue];
+    LoginController *mainVC = [[LoginController alloc]init];
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:mainVC];
+    
+    if(loginSty == 0){
+        mainVC.styleStr = @"第一次登陆";
+    }else{
+        mainVC.styleStr = @"修改了登录密码";
+    }
+    self.window.rootViewController = nav;
+    [_window makeKeyAndVisible];
+    
+    
+}
+
+#pragma mark - 跳转
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+  sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation {
+    
+    if ([url.host isEqualToString:@"safepay"]) {
+        // 支付跳转支付宝钱包进行支付，处理支付结果
+        [[AlipaySDK defaultService] processOrderWithPaymentResult:url standbyCallback:^(NSDictionary *resultDic) {
+            NSLog(@"result = %@",resultDic);
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"AliPayCallBack" object:nil userInfo:resultDic];
+        }];
+    }
+    
+    return YES;
+}
+
+// NOTE: 9.0以后使用新API接口
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString*, id> *)options
+{
+    if ([url.host isEqualToString:@"safepay"]) {
+        // 支付跳转支付宝钱包进行支付，处理支付结果
+        [[AlipaySDK defaultService] processOrderWithPaymentResult:url standbyCallback:^(NSDictionary *resultDic) {
+            NSLog(@"result = %@",resultDic);
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"AliPayCallBack" object:nil userInfo:resultDic];
+        }];
+    }
+    return YES;
+}
+#pragma  mark - 注册APNS成功
+- (void)application:(UIApplication *)application
+didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    
+    /// Required - 注册 DeviceToken
+    [JPUSHService registerDeviceToken:deviceToken];
+}
+#pragma  mark - 注册APNS失败
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    //Optional
+    NSLog(@"did Fail To Register For Remote Notifications With Error: %@", error);
+}
+
+#pragma mark- JPUSHRegisterDelegate
+
+// iOS 10 Support
+- (void)jpushNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(NSInteger))completionHandler {
+    // Required
+    NSDictionary * userInfo = notification.request.content.userInfo;
+    if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
+        [JPUSHService handleRemoteNotification:userInfo];
+    }
+    completionHandler(UNNotificationPresentationOptionAlert); // 需要执行这个方法，选择是否提醒用户，有Badge、Sound、Alert三种类型可以选择设置
+}
+
+// iOS 10 Support
+- (void)jpushNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
+    // Required
+    NSDictionary * userInfo = response.notification.request.content.userInfo;
+    if([response.notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
+        [JPUSHService handleRemoteNotification:userInfo];
+    }
+    completionHandler();  // 系统要求执行这个方法
+    NSLog(@"userInfo1 ========%@",userInfo);
+    
+    AdvanceManagerViewController *vc = [[AdvanceManagerViewController alloc]init];
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:vc];
+    vc.pushStr = @"Push";
+    self.window.rootViewController = nav;
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    
+    // Required, iOS 7 Support
+    [JPUSHService handleRemoteNotification:userInfo];
+    completionHandler(UIBackgroundFetchResultNewData);
+    
+    NSLog(@"userInfo2 ========%@",userInfo);
+    return;
+    //语音播报
+#pragma mark--zll--AVFoundation---
+    //    completionHandler(UIBackgroundFetchResultNewData);
+
+//    [ZLLModelTool setNormol:@"no" forkey:@"yuding"];
+//    [ZLLModelTool setNormol:@"yes" forkey:@"fukuan"];
+    
+    AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:userInfo[@"aps"][@"alert"]];
+    utterance.pitchMultiplier=0.8;
+    AVSpeechSynthesisVoice *voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"zh-CN"];
+    
+
+    utterance.voice = voice;
+    
+    AVSpeechSynthesizer *synth = [[AVSpeechSynthesizer alloc] init];
+    
+    [synth speakUtterance:utterance];
+    
+    /*
+     //语音播报
+     AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:@"床前明月光，疑是地上霜。"];
+     
+     utterance.pitchMultiplier=0.8;
+     
+     //中式发音
+     AVSpeechSynthesisVoice *voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"zh-CN"];
+     
+     utterance.voice = voice;
+     
+     NSLog(@"%@",[AVSpeechSynthesisVoice speechVoices]);
+     
+     AVSpeechSynthesizer *synth = [[AVSpeechSynthesizer alloc]init];
+     
+     [synth speakUtterance:utterance];
+     
+     */
+    
+    
+    
+    
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    
+    // Required,For systems with less than or equal to iOS6
+    [JPUSHService handleRemoteNotification:userInfo];
+}
+
+-(BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url{
+    return [WXApi handleOpenURL:url delegate:self];
+}
+
+
+@end

@@ -1,0 +1,100 @@
+//
+//  PrefixHeader.pch
+//  ChongQingPuHui
+//
+//  Created by 节庆霞 on 2017/7/14.
+//  Copyright © 2017年 节庆霞. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import "JQXCustom.h"
+#import "NSString+Hex.h"
+#import "ZYViewExt.h"
+#import "UIColor+Hex.h"
+#import "ALToastView.h"
+#import "UIAlertView+SJAddtions.h"
+#import "UIImageView+WebCache.h"
+#import "AFNetworking.h"
+#import "JHHJView.h"
+#import "JQXURL.h"
+#import "QJGlobalControl.h"
+#import "MJRefresh.h"
+#import "JQXAlertView.h"
+#import <AlipaySDK/AlipaySDK.h>
+#import <MAMapKit/MAMapKit.h>
+#import <AMapFoundationKit/AMapFoundationKit.h>
+// 引入JPush功能所需头文件
+#import "JPUSHService.h"
+// iOS10注册APNs所需头文件
+#ifdef NSFoundationVersionNumber_iOS_9_x_Max
+#import <UserNotifications/UserNotifications.h>
+#endif
+// 如果需要使用idfa功能所需要引入的头文件（可选）
+#import <AdSupport/AdSupport.h>
+
+#import "YSTFileManageTool.h"
+
+#pragma mark---zll---
+#import "ZLLModelTool.h"
+
+
+// ---->状态栏的高度
+#define STATUSBAHeight  [[UIApplication sharedApplication] statusBarFrame].size.height
+// ---->导航栏的高度
+#define NAVHeight  44
+// ---->头部高度
+#define TOPALLHeight        44 + STATUSBAHeight
+//获取设备屏幕尺寸
+// ---->设备宽
+#define SCREEN_WIDTH          [UIScreen mainScreen].bounds.size.width
+// ---->设备高
+#define SCREEN_HEIGHT         [UIScreen mainScreen].bounds.size.height
+
+#define BACKGROUNGCOLOR                    [UIColor colorWithHexString:@"#CD5041"]//#CD5041红色 #1a191e黑色
+#define BACKGrayColor                    [UIColor colorWithRed:0.90f green:0.90f blue:0.91f alpha:1.00f]
+#define Font(size) [UIFont systemFontOfSize:size]
+#define NULL_TO_NIL(obj) ({ __typeof__ (obj) __obj = (obj); __obj == [NSNull null] ? nil : obj; })
+
+
+#define LoginStyle  @"LoginStyle"   //登录状态，第一次进入手机时候状态为0，之后为1，自动登录
+
+#define LoginPhone      @"LoginPhone"
+#define LoginPassWord   @"LoginPassWord"
+#define LoginId         @"LoginId"
+#define LoginToken      @"LoginToken"
+#define UserName        @"userName"
+#define IsCdKey         @"isCdKey"//0:未激活   1:激活
+#define LoginRegistphone      @"LoginRegistphone"//选择登录账号
+#define KH_The_Version        @"Version"//版本号
+#define APPStoreURL     @"itms-apps://itunes.apple.com/us/app//id1275423727?l=zh&ls=1&mt=8"
+
+
+
+////////////////////////////////////////
+#define AvailableIntegral   @"availableIntegral"    //会员积分
+#define MemberId            @"memberId"    //会员id
+#define MemberPhone         @"phone"    //会员电话
+#define MemberCode          @"code"    //会员卡号
+#define UserID              @"userId"//userID
+
+#define bankCardInfoId      @"bankCardInfoId" //实名认证得来的id
+#define idCardNo            @"idCardNo"             //身份证号码
+#define RealName            @"ownerName"            //真实姓名
+#define ProfitRatio         @"0.15"       //管理比例
+
+#define AMAPKEY             @"85178cabad1cedd5093a2dd15221f550"
+#define WX_APP_KEY @"ocSxJwsk22hof0g00v5uSSFJHXnqmiC6"
+#define WX_APP_ID   @"wxe093ab617c026eb5"
+
+
+// ---->比例宽
+#define SCALE_WIDTH(w)  SCREEN_WIDTH/375 * w
+// ---->比例高
+#define SCALE_HEIGHT(h) SCREEN_HEIGHT/667 * h
+#endif /* PrefixHeader_pch */

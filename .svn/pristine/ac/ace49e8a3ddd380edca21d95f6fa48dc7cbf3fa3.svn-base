@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "0"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ChongQingPuHui/OnlinePayment/Phone/PhoneViewController.m"
+            timestampString = "530593494.828981"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "101"
+            endingLineNumber = "101"
+            landmarkName = "-sureClick:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ChongQingPuHui/OnlinePayment/Phone/PhoneViewController.m"
+            timestampString = "530593502.227918"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "98"
+            endingLineNumber = "98"
+            landmarkName = "-sureClick:"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[PhoneViewController sureClick:]"
+                  moduleName = "ChongQingPuHui"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/jieqingxia/Documents/Svn/%E5%BF%AB%E7%81%AB%E6%8E%8C%E6%9F%9C/ChongQingPuHui/OnlinePayment/Phone/PhoneViewController.m"
+                  timestampString = "531279885.540714"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "98"
+                  endingLineNumber = "98"
+                  offsetFromSymbolStart = "1218">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__33-[PhoneViewController sureClick:]_block_invoke"
+                  moduleName = "ChongQingPuHui"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/jieqingxia/Documents/Svn/%E5%BF%AB%E7%81%AB%E6%8E%8C%E6%9F%9C/ChongQingPuHui/OnlinePayment/Phone/PhoneViewController.m"
+                  timestampString = "531279885.545"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "99"
+                  endingLineNumber = "99"
+                  offsetFromSymbolStart = "53">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

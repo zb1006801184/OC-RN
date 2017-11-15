@@ -1,0 +1,549 @@
+//
+//  MainViewController.m
+//  ChongQingPuHui
+//
+//  Created by 节庆霞 on 2017/7/14.
+//  Copyright © 2017年 节庆霞. All rights reserved.
+//
+
+#import "MainViewController.h"
+#import "AppDelegate.h"
+#import "JQXButton.h"
+#import "PhoneViewController.h"//输入会员手机号
+#import "PayCodeViewController.h"//线上付
+#import "OFFCodeViewController.h"//收款
+#import "MineMoneryViewController.h"//余额流水
+#import "OrderViewController.h"//订单记录
+#import "RealNameViewController.h"//实名认证
+#import "RealSuccessViewController.h"//认证详情
+#import "EditBankViewController.h"//编辑银行卡
+#import "BankViewController.h"//我的银行卡
+#import "SetUpViewController.h"//密码设置
+#import "PaySuccessViewController.h"
+#import "ShopAddressViewController.h"//门店地址
+#import "ShoppingManagerViewController.h"//商店管理
+#import "TableManagerViewController.h"//餐位管理
+#import "TableNewViewController.h"//餐位管理2
+#import "OrderManagerViewController.h"//订单管理
+#import "AdvanceManagerViewController.h"//预定管理
+#import "ActivationViewController.h"//激活码
+#import "SetMessageViewController.h"//设置
+#import "LoginController.h"//登录界面
+#import "RNViewController.h"
+@interface MainViewController ()
+{
+    NSString *typeStr;
+    UIImageView *img;
+    UIButton *button;
+}
+@property (nonatomic,strong)NSString *realStr;
+@property (nonatomic,strong)UIButton *activationButton;
+@property (nonatomic,strong)UILabel *phoneLabel;
+@property (nonatomic,strong)UIScrollView *mainScrollView;
+@property (nonatomic,strong)UILabel *nameLabel;
+@end
+
+@implementation MainViewController
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.realStr = @"首页展示";
+    [self YESorNoNealName:@"1"];
+    [self VersionYES];
+    
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    [self setNAV];
+    self.view.backgroundColor = RGB_COLOR(242, 242, 242);
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notifActon:) name:@"MainVersion" object:nil];
+    
+    self.realStr = @"首页展示";
+    [self YESorNoNealName:@"1"];
+    [self setMainUI];
+    
+}
+#pragma mark - 主视图
+- (void)setMainUI{
+    self.mainScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, TOPALLHeight, SCREEN_WIDTH, SCREEN_HEIGHT - TOPALLHeight)];
+    [self.view addSubview:self.mainScrollView];
+    UIImageView *bigImg = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, SCALE_HEIGHT(160))];
+    bigImg.image = [UIImage imageNamed:@"img"];
+    [self.mainScrollView addSubview:bigImg];
+    
+    self.nameLabel = [JQXCustom creatLabel:CGRectMake(0, SCALE_HEIGHT(50), bigImg.width, 20) backColor:[UIColor clearColor] text:@"欢迎您" textColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:20] textAlignment:NSTextAlignmentCenter numOnLines:0];
+    [self.mainScrollView addSubview:self.nameLabel];
+    
+    
+    NSString *str = [[NSUserDefaults standardUserDefaults]objectForKey:LoginPhone];
+    if(str.length == 11 || str.length == 13){
+        str = [NSString stringWithFormat:@"%@****%@",[str substringToIndex:3],[str substringFromIndex:7]];
+    }
+    
+    //手机号
+    self.phoneLabel = [JQXCustom creatLabel:CGRectMake(0, self.nameLabel.bottom + 20, bigImg.width, 20) backColor:[UIColor clearColor] text:str textColor:[UIColor whiteColor] font:[UIFont systemFontOfSize:22] textAlignment:NSTextAlignmentCenter numOnLines:0];
+    [self.mainScrollView addSubview:self.phoneLabel];
+    
+    //激活码
+    self.activationButton = [JQXCustom creatButton:CGRectMake((SCREEN_WIDTH - 130)/2, self.nameLabel.bottom + 20, 130, 30) backColor:RGB_COLOR(229, 229, 229) text:@"激活码" textColor:[UIColor colorWithHexString:@"#333333"] font:Font(13) addTarget:self Action:@selector(ActivationAction)];
+    self.activationButton.layer.masksToBounds = YES;
+    self.activationButton.layer.cornerRadius = 8;
+    [self.mainScrollView addSubview:self.activationButton];
+    
+    NSString *LoginStyleStr = [[NSUserDefaults standardUserDefaults]objectForKey:LoginStyle];
+    NSString *isCdKey = [[NSUserDefaults standardUserDefaults]objectForKey:IsCdKey];
+    if(![LoginStyleStr isEqualToString:@"0"]){
+        if([isCdKey intValue] == 0){
+            
+            self.phoneLabel.hidden = YES;
+            self.activationButton.hidden = NO;
+            
+        }else{
+            
+            self.phoneLabel.hidden = NO;
+            self.activationButton.hidden = YES;
+        }
+        
+    }else{
+        self.phoneLabel.hidden = YES;
+        self.activationButton.hidden = YES;
+    }
+    
+    
+    //线下付，线上付
+    NSArray *topImgArr = @[@"icon_offline",@"icon_Online"];
+    NSArray *toptitleArrray = @[@" 线下收",@" 线上收"];
+    for (int i = 0; i < topImgArr.count; i ++) {
+        
+        UIButton *button = [JQXCustom creatButton:CGRectMake( i * (SCREEN_WIDTH - 30)/2 + (i + 1) *10 , bigImg.bottom + 10 , (SCREEN_WIDTH - 30)/2, SCALE_HEIGHT(75)) backColor:[UIColor whiteColor] text:toptitleArrray[i] textColor:RGB_COLOR(101, 101, 101) font:[UIFont systemFontOfSize:20] addTarget:self Action:@selector(PayAction:)];
+        [button setImage:[UIImage imageNamed:topImgArr[i]] forState:UIControlStateNormal];
+        button.tag = 200 + i;
+        [self.mainScrollView addSubview:button];
+    }
+    
+    
+    
+    NSArray *imgArray = @[@"icon_my",@"icon_Bank-card",@"icon_Real-name",@"icon_store",@"icon_Password",@"icon_Order",@"icon_Table",@"icon_OManager",@"icon_Advance"];
+    NSArray *titleArray = @[@"我的账户",@"我的银行卡",@"实名认证",@"门店地址",@"密码设置",@"商品管理",@"餐位管理",@"订单管理",@"预定管理"];
+    CGFloat buttonH = (SCREEN_HEIGHT -  (STATUSBAHeight + NAVHeight) - bigImg.bottom - 20 - SCALE_HEIGHT(75))/3;
+    for (int i = 0; i < imgArray.count; i ++) {
+        int y = i / 3;
+        JQXButton *button = [[JQXButton alloc]initWithFrame:CGRectMake(i *SCREEN_WIDTH/3 - y*SCREEN_WIDTH,bigImg.bottom + 20 + SCALE_HEIGHT(75) + y *buttonH, SCREEN_WIDTH/3, buttonH) index:i];
+        button.backgroundColor = [UIColor whiteColor];
+        button.btnImg.image = [UIImage imageNamed:imgArray[i]];
+        button.btnLabel.text = titleArray[i];
+        button.tag = 100 + i;
+        [button addTarget:self action:@selector(ButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [self.mainScrollView addSubview:button];
+    }
+    self.mainScrollView.contentSize = CGSizeMake(SCREEN_WIDTH, bigImg.bottom + 20 +SCALE_HEIGHT(75) + 3 *buttonH);
+}
+- (void)PayAction:(UIButton *)sender
+{
+    NSString *LoginStyleStr = [[NSUserDefaults standardUserDefaults]objectForKey:LoginStyle];
+    if(![LoginStyleStr isEqualToString:@"0"]){
+        NSString *isCdKey = [[NSUserDefaults standardUserDefaults]objectForKey:IsCdKey];
+        if([isCdKey intValue] == 0){
+            
+            [ALToastView toastInView:self.view withText:@"您的账户暂未激活，请输入激活码"];
+            
+        }else{
+            
+            if(sender.tag == 200){//线下
+                [self YesORNoPayPWD];//判断是否设置支付密码
+                
+            }else if (sender.tag == 201){//线上
+                PayCodeViewController *phoneVC = [[PayCodeViewController alloc]init];
+                [self.navigationController pushViewController:phoneVC animated:YES];
+                
+            }
+            
+        }
+    }else{
+        [self GoLoginVC];
+    }
+    
+   
+    
+}
+#pragma mark - 按钮点击事件
+- (void)ButtonAction:(UIButton *)sender
+{
+    RNViewController *RNVc = [[RNViewController alloc]init];
+    [self.navigationController pushViewController:RNVc animated:YES];
+    return;
+    NSString *LoginStyleStr = [[NSUserDefaults standardUserDefaults]objectForKey:LoginStyle];
+    
+    if(![LoginStyleStr isEqualToString:@"0"]){
+        
+        if(sender.tag == 100){//我的账户（余额流水）
+            
+            MineMoneryViewController *moneryVC = [[MineMoneryViewController alloc]init];
+            [self.navigationController pushViewController:moneryVC animated:YES];
+            
+        }else if(sender.tag == 101){ //我的银行卡
+            
+            [self YESorNoBank];
+            
+        }else if(sender.tag == 102){//实名认证
+            self.realStr = @"实名认证";
+            [self YESorNoNealName:@"2"];
+            
+        }else if (sender.tag == 103){//门店地址
+            
+            ShopAddressViewController *shopVC = [[ShopAddressViewController alloc]init];
+            shopVC.styleStr = @"保存";
+            [self.navigationController pushViewController:shopVC animated:YES];
+            
+        }else if(sender.tag == 104){//密码设置
+            SetUpViewController *setupVC = [[SetUpViewController alloc]init];
+            [self.navigationController pushViewController:setupVC animated:YES];
+            
+        }else if (sender.tag == 105){//商店管理
+            ShoppingManagerViewController *registerVC = [[ShoppingManagerViewController alloc]init];
+            [self.navigationController pushViewController:registerVC animated:YES];
+        }else if (sender.tag == 106){//餐位管理
+            
+            //        TableManagerViewController *tableVC = [[TableManagerViewController alloc]init];
+            //        [self.navigationController pushViewController:tableVC animated:YES];
+            
+            TableNewViewController *tableVC = [[TableNewViewController alloc]init];
+            [self.navigationController pushViewController:tableVC animated:YES];
+            
+        }else if (sender.tag == 107){//订单管理
+            
+            OrderManagerViewController *orderVC = [[OrderManagerViewController alloc]init];
+            [self.navigationController pushViewController:orderVC animated:YES];
+            
+        }else if (sender.tag == 108){//预定管理
+            
+            AdvanceManagerViewController *advanceVC = [[AdvanceManagerViewController alloc]init];
+            advanceVC.pushStr = @"Normal";
+            [self.navigationController pushViewController:advanceVC animated:YES];
+            
+        }
+        
+        
+    }else{
+        [self GoLoginVC];
+    }
+    
+   
+}
+#pragma mark - 激活码
+- (void)ActivationAction
+{
+    ActivationViewController *vc = [[ActivationViewController alloc]init];
+    [vc codeText:^(NSString *codeText) {
+        [[NSUserDefaults standardUserDefaults]setObject:@"1" forKey:IsCdKey];
+        self.phoneLabel.hidden = NO;
+        self.activationButton.hidden = YES;
+    }];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (void)setNAV
+{
+    UIView *statusView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, STATUSBAHeight)];
+    statusView.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:statusView];
+    
+    UIView *navView = [[UIView alloc]initWithFrame:CGRectMake(0, STATUSBAHeight, SCREEN_WIDTH, NAVHeight)];
+    navView.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:navView];
+    
+    
+    UILabel *titleLabel = [JQXCustom creatLabel:CGRectMake((SCREEN_WIDTH - 120)/2, 0, 120, navView.height) backColor:[UIColor clearColor] text:@"和火掌柜" textColor:[UIColor blackColor] font:[UIFont systemFontOfSize:17] textAlignment:NSTextAlignmentCenter numOnLines:1];
+    [navView addSubview:titleLabel];
+    
+    
+    
+    
+    
+    img = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH - 32 , (navView.height - 20)/2, 22, 20)];
+    img.image = [UIImage imageNamed:@"JQXMessage"];
+    [navView addSubview:img];
+    
+    button = [JQXCustom creatButton:CGRectMake(SCREEN_WIDTH - 40, 0, 40, navView.height) backColor:[UIColor clearColor] text:@"" textColor:[UIColor clearColor] font:[UIFont systemFontOfSize:12] addTarget:self Action:nil];
+    [button addTarget:self action:@selector(LoginOutAction) forControlEvents:UIControlEventTouchUpInside];
+    [navView addSubview:button];
+    
+    UIImageView *img1 = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH - 70 , (navView.height - 23)/2, 23, 23)];
+    img1.image = [UIImage imageNamed:@"JQXSetUp"];
+    [navView addSubview:img1];
+    
+    UIButton *leftbutton = [JQXCustom creatButton:CGRectMake(SCREEN_WIDTH - 80, 0, 40, navView.height) backColor:[UIColor clearColor] text:@"" textColor:[UIColor clearColor] font:[UIFont systemFontOfSize:12] addTarget:self Action:nil];
+    [leftbutton addTarget:self action:@selector(MainShopAction) forControlEvents:UIControlEventTouchUpInside];
+    
+    [navView addSubview:leftbutton];
+    
+    
+    
+    
+    
+    
+    
+//    NSString *loginStr = [[NSUserDefaults standardUserDefaults]objectForKey:LoginStyle];
+//    if(![loginStr isEqualToString:@"0"]){
+//        img.hidden = NO;
+//        button.hidden = NO;
+//    }else{
+//        img.hidden = YES;
+//        button.hidden = YES;
+//    }
+//
+ 
+}
+#pragma mark - 推出登录
+- (void)LoginOutAction
+{
+    [UIAlertView alertViewTitle:@"提示" message:@"是否退出登录" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定"];
+    
+    
+}
+#pragma mark - 门店信息
+- (void)MainShopAction
+{
+    
+    NSString *LoginStyleStr = [[NSUserDefaults standardUserDefaults]objectForKey:LoginStyle];
+    
+    if(![LoginStyleStr isEqualToString:@"0"]){
+        SetMessageViewController *vc = [[SetMessageViewController alloc]init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else{
+        [self GoLoginVC];
+    }
+    
+   
+}
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex NS_DEPRECATED_IOS(2_0, 9_0){
+    
+    if(buttonIndex == 1){
+        
+        //退出登录 清除本地缓存
+        NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+        [user setObject:@"0" forKey:LoginStyle];
+        [user removeObjectForKey:LoginPhone];
+        [user removeObjectForKey:LoginPassWord];
+        [user removeObjectForKey:LoginId];
+        [user removeObjectForKey:LoginToken];
+        [user removeObjectForKey:UserName];
+        [user removeObjectForKey:AvailableIntegral];
+        [user removeObjectForKey:MemberId];
+        [user removeObjectForKey:MemberPhone];
+        [user removeObjectForKey:MemberCode];
+        [user removeObjectForKey:UserID];
+        [user removeObjectForKey:bankCardInfoId];
+        [user removeObjectForKey:idCardNo];
+        [user removeObjectForKey:RealName];
+        [user removeObjectForKey:ProfitRatio];
+        [user removeObjectForKey:IsCdKey];
+        [JPUSHService setAlias:@"" callbackSelector:nil object:nil];
+        
+        self.phoneLabel.hidden = YES;
+        self.activationButton.hidden = YES;
+        img.hidden = YES;
+        button.hidden = YES;
+        self.nameLabel.text = @"欢迎您";
+//        [self GoLoginVC];
+    }
+    
+    if([typeStr isEqualToString:@"重大更新"]){
+        if(buttonIndex == 0){
+            
+          [[UIApplication sharedApplication] openURL:[NSURL URLWithString:APPStoreURL]];
+            
+        }
+    }
+
+}
+
+#pragma mark - 校验实名认证
+- (void)YESorNoNealName:(NSString *)type
+{
+    [JHHJView showLoadingOnTheKeyWindowWithType:2];
+    [QJGlobalControl sendGETWithUrl:httpYESorNOName parameters:nil success:^(id data) {
+        [JHHJView hideLoading];
+        NSLog(@"data === %@",data);
+        if([data[@"code"]integerValue] == 200){
+            int isAuth = [data[@"data"][@"isAuth"]intValue];//0 是未实名认证
+            /*
+             bankCardInfoId = "<null>";
+             idCardNo = "<null>";
+             isAuth = 0;
+             ownerName = "<null>";
+             
+             
+             bankCardInfoId = 11;
+             idCardNo = 230281199105143722;
+             isAuth = 1;
+             ownerName = "\U9648\U6653\U4f1f";
+             
+             */
+            if(isAuth == 0){
+                if([self.realStr isEqualToString:@"实名认证"]){
+                    RealNameViewController *success = [[RealNameViewController alloc]init];
+                    [self.navigationController pushViewController:success animated:YES];
+
+                }
+            }else{
+                NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+                [user setObject:data[@"data"][@"bankCardInfoId"] forKey:bankCardInfoId];
+                [user setObject:data[@"data"][@"idCardNo"] forKey:idCardNo];
+                [user setObject:data[@"data"][@"ownerName"] forKey:RealName];
+                [user synchronize];
+                
+//
+                
+                NSString *nameStr = [NSString stringWithFormat:@"%@",[[NSUserDefaults standardUserDefaults] objectForKey:RealName]];
+                NSString *hiddenStr = nameStr;
+                hiddenStr = [NSString stringWithFormat:@"*%@",[nameStr substringFromIndex:1]];
+                
+                self.nameLabel.text = [NSString stringWithFormat:@"欢迎您 , %@",hiddenStr];
+                if([self.realStr isEqualToString:@"实名认证"]){
+                    //认证成功
+                    RealSuccessViewController *success = [[RealSuccessViewController alloc]init];
+                    [self.navigationController pushViewController:success animated:YES];
+
+                }
+            }
+            
+            
+        }else{
+            if([type isEqualToString:@"2"]){
+                [ALToastView toastInView:self.view withText:data[@"message"]];
+            }
+            
+        }
+        
+        
+    } fail:^(NSError *error) {
+        [JHHJView hideLoading];
+        [ALToastView toastInView:self.view withText:@"请求失败"];
+    }];
+    
+}
+
+
+#pragma mark - 校验是否绑定银行卡
+- (void)YESorNoBank
+{
+    [JHHJView showLoadingOnTheKeyWindowWithType:2];
+    [QJGlobalControl sendGETWithUrl:httpYESorNOBank parameters:nil success:^(id data) {
+        [JHHJView hideLoading];
+        NSLog(@"data === %@",data);
+        if([data[@"code"]integerValue] == 200){
+            self.realStr = @"银行卡";
+            [self YESorNoNealName:@"2"];
+            BankViewController *editVC = [[BankViewController alloc]init];
+            [self.navigationController pushViewController:editVC animated:YES];
+            
+        }else{
+            [ALToastView toastInView:self.view withText:data[@"message"]];
+        }
+        
+        
+    } fail:^(NSError *error) {
+        [JHHJView hideLoading];
+        [ALToastView toastInView:self.view withText:@"请求失败"];
+    }];
+    
+}
+- (void)notifActon:(NSNotification *)notif
+{
+    [self VersionYES];
+}
+
+#pragma mark - 判断版本
+- (void)VersionYES
+{
+    NSDictionary *params = @{@"type":@"2"};
+    NSLog(@"🍊🍊%@",JQXHttp_Version);
+    [QJGlobalControl sendPOSTWithUrl:JQXHttp_Version parameters:params success:^(id data) {
+        NSLog(@"🍊%@",data);
+        if ([data[@"code"] intValue] == 1 ) {
+            NSMutableArray *array = data[@"data"];
+            if (array.count != 0) {
+                NSDictionary *dic = array[0];
+                NSString *version = [NSString stringWithFormat:@"%@",NULL_TO_NIL(dic[@"version"])];//版本号
+                NSString *udpate = [NSString stringWithFormat:@"%@",NULL_TO_NIL(dic[@"udpate"])];
+                NSString *bendiVersion = [[NSUserDefaults standardUserDefaults]objectForKey:KH_The_Version];
+                if([version integerValue] > [bendiVersion integerValue]){
+                    if([udpate integerValue] == 1){
+                        typeStr = @"重大更新";
+                        [self VersionYESView];
+                        
+                    }else{
+                        typeStr = @"非重大更新";
+                        [self VersionYESView];
+                    }
+                    
+                }else{
+                   
+                }
+      
+                
+            }
+        }
+    } fail:^(NSError *error) {
+        NSLog(@"%@",error);
+        [ALToastView toastInView:self.view withText:@"请求失败"];
+    }];
+}
+
+//判断是否设置过支付密码
+- (void)YesORNoPayPWD
+{
+    [JHHJView showLoadingOnTheKeyWindowWithType:2];
+    [QJGlobalControl sendGETWithUrl:http_YESORNOPayPwd parameters:nil success:^(id data) {
+        [JHHJView hideLoading];
+        NSLog(@"%@",data);
+  
+        if([data[@"code"]integerValue] == 200){
+            PhoneViewController *phoneVC = [[PhoneViewController alloc]init];
+            phoneVC.styleStr = @"线下付";
+            [self.navigationController pushViewController:phoneVC animated:YES];
+        }else{
+             [ALToastView toastInView:self.view withText:@"请先设置支付密码"];
+        }
+        
+        
+    } fail:^(NSError *error) {
+        [JHHJView hideLoading];
+        [ALToastView toastInView:self.view withText:@"请求失败"];
+    }];
+    
+}
+
+- (void)VersionYESView
+{
+    [UIAlertView alertViewTitle:@"提示" message:@"发现新版本，请更新" delegate:self cancelButtonTitle:@"确定"];
+}
+- (void)GoLoginVC
+{
+    LoginController *vc = [[LoginController alloc]init];
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:vc];
+    [self presentViewController:nav animated:YES completion:nil];
+}
+- (void) dealloc {
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end
